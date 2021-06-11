@@ -94,7 +94,7 @@ const displayMovements = function (movements, sort = false) {
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__value">${mov}€</div>
+        <div class="movements__value">${mov.toFixed(2)}€</div>
       </div>
     `;
 
@@ -104,19 +104,19 @@ const displayMovements = function (movements, sort = false) {
 
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance}€`;
+  labelBalance.textContent = `${acc.balance.toFixed(2)}€`;
 };
 
 const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes}€`;
+  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
 
   const out = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(out)}€`;
+  labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
 
   const interest = acc.movements
     .filter(mov => mov > 0)
@@ -126,7 +126,7 @@ const calcDisplaySummary = function (acc) {
       return int >= 1;
     })
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${interest}€`;
+  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
 
 const createUsernames = function (accs) {
@@ -164,7 +164,7 @@ btnLogin.addEventListener('click', function (e) {
   );
   console.log(currentAccount);
 
-  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+  if (currentAccount?.pin === +inputLoginPin.value) {
     // Display UI and message
     labelWelcome.textContent = `Welcome back, ${
       currentAccount.owner.split(' ')[0]
@@ -182,7 +182,7 @@ btnLogin.addEventListener('click', function (e) {
 
 btnTransfer.addEventListener('click', function (e) {
   e.preventDefault();
-  const amount = Number(inputTransferAmount.value);
+  const amount = +inputTransferAmount.value;
   const receiverAcc = accounts.find(
     acc => acc.username === inputTransferTo.value
   );
@@ -206,7 +206,7 @@ btnTransfer.addEventListener('click', function (e) {
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
 
-  const amount = Number(inputLoanAmount.value);
+  const amount = Math.floor(inputLoanAmount.value);
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     // Add movement
@@ -223,7 +223,7 @@ btnClose.addEventListener('click', function (e) {
 
   if (
     inputCloseUsername.value === currentAccount.username &&
-    Number(inputClosePin.value) === currentAccount.pin
+    +inputClosePin.value === currentAccount.pin
   ) {
     const index = accounts.findIndex(
       acc => acc.username === currentAccount.username
@@ -251,3 +251,98 @@ btnSort.addEventListener('click', function (e) {
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
+
+/*
+
+// Converting and Checking Numbers
+console.log(23 === 23.0);
+
+// Base 10 - 0 to 9
+// Binary base 2 - 0 to 1
+console.log(0.1 + 0.2); // 0.300000000004
+console.log(0.1 + 0.2 === 0.3); //false
+
+// Conversion
+console.log(Number('23'));
+console.log(+'23');
+
+// Parsing  -- integer
+console.log(Number.parseInt('30px', 10));
+console.log(Number.parseInt('e23', 10)); //NaN  ---> it has to be starting with numbers
+
+// Parsing -- Float(it reads decimal numbers)
+console.log(Number.parseInt('2.5rem')); //2
+console.log(Number.parseFloat('2.5rem')); // 2.5 ---- ex) coming from CSS
+
+//console.log(parseFloat('2.5rem')); // it works without 'Number' however, Number(name space) is prefered in modern JS
+
+// check if value is NaN
+console.log(Number.isNaN(20)); // false
+console.log(Number.isNaN('20')); // false
+console.log(Number.isNaN(+'20X')); //true
+console.log(Number.isNaN(23 / 0)); //false  ---- infinity
+
+//Better way to check if value is number or not
+console.log(Number.isFinite(20)); //true
+console.log(Number.isFinite('20')); //false
+console.log(Number.isFinite(+'20X')); //false
+console.log(Number.isFinite(23 / 0)); //false
+
+console.log(Number.isInteger(23)); //true
+console.log(Number.isInteger(23.0)); //true
+console.log(Number.isInteger(23 / 0)); //false
+
+console.log(typeof +'20');
+
+*/
+
+// Math and Rounding
+
+console.log(Math.sqrt(25));
+console.log(25 ** (1 / 2));
+console.log(8 ** (1 / 3));
+
+console.log(Math.max(5, 18, 23, 11, 2)); //23
+console.log(Math.max(5, 18, '23', 11, 2)); //23
+console.log(Math.max(5, 18, '23px', 11, 2)); //NaN  (Not parsing)
+
+console.log(Math.min(5, 18, 23, 11, 2)); //2
+console.log(Math.PI * Number.parseFloat('10px') ** 2);
+
+console.log(Math.trunc(Math.random() * 6) + 1);
+
+// Generating random numbers in between max and min (either negative or positive)
+const randomInt = (min, max) =>
+  Math.floor(Math.random() * (max - min) + 1) + min;
+//0...0.99 -> 0...(max-min)->min...max
+//console.log(randomInt(10, 20));
+
+// Rounding integers
+console.log(Math.trunc(23.3)); //23
+
+console.log(Math.round(23.3)); //23
+console.log(Math.round(23.9)); //24
+
+console.log(Math.ceil(23.3)); //24
+console.log(Math.ceil(23.9)); //24
+
+console.log(Math.floor(23.3)); //23
+console.log(Math.floor(23.9)); //23
+console.log(Math.floor('23.9')); //23
+
+console.log(Math.trunc(23.3)); //23  'trunc' works the same as 'floor' in positive numbers but negative numbers
+
+console.log(Math.trunc(-23.3)); //-23
+console.log(Math.floor(-23.3)); //-24 --- when dealing with negative numbers rounding works the other way around
+
+// Rounding decimals
+
+console.log((2.7).toFixed(0)); //3
+console.log((2.7).toFixed(2)); // 2.70
+console.log((2.7).toFixed(3)); // 2.700
+console.log((2.345).toFixed(2)); // 2.35
+console.log(+(2.345).toFixed(2)); // 2.35 --> returns a number this time because of '+'
+
+// to round decimal numbers
+// 1) it gets another '()' to put the numbers in
+// 2) .toFixed()  -> always returns 'string' not a number
