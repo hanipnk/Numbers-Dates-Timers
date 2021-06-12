@@ -81,19 +81,30 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 // Functions
 
-const displayMovements = function (movements, sort = false) {
+const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
-  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+  const movs = sort
+    ? acc.movements.slice().sort((a, b) => a - b)
+    : acc.movements;
 
   movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
+
+    const date = new Date(acc.movementsDates[i]);
+
+    const day = `${date.getDate()}`.padStart(2, 0);
+    const month = `${date.getMonth() + 1}`.padStart(2, 0);
+    const year = date.getFullYear();
+
+    const displayDate = `${day}/${month}/${year}`;
 
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
+        <div class="movements__date">${displayDate}</div>
         <div class="movements__value">${mov.toFixed(2)}€</div>
       </div>
     `;
@@ -142,7 +153,7 @@ createUsernames(accounts);
 
 const updateUI = function (acc) {
   // Display movements
-  displayMovements(acc.movements);
+  displayMovements(acc);
 
   // Display balance
   calcDisplayBalance(acc);
@@ -154,6 +165,11 @@ const updateUI = function (acc) {
 ///////////////////////////////////////
 // Event handlers
 let currentAccount;
+
+// FAKE ALWAYS LOGGED IN
+currentAccount = account1;
+updateUI(currentAccount);
+containerApp.style.opacity = 100;
 
 btnLogin.addEventListener('click', function (e) {
   // Prevent form from submitting
@@ -170,6 +186,16 @@ btnLogin.addEventListener('click', function (e) {
       currentAccount.owner.split(' ')[0]
     }`;
     containerApp.style.opacity = 100;
+
+    // Create Current date and time
+
+    const now = new Date();
+    const day = `${now.getDate()}`.padStart(2, 0);
+    const month = `${now.getMonth() + 1}`.padStart(2, 0);
+    const year = now.getFullYear();
+    const hour = `${now.getHours()}`.padStart(2, 0);
+    const min = `${now.getMinutes()}`.padStart(2, 0);
+    labelDate.textContent = `${day}/${month}/${year}, ${hour}:${min}`;
 
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
@@ -198,6 +224,10 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
 
+    // Add transfer date
+    currentAccount.movementsDates.push(new Date().toISOString());
+    receiverAcc.movementsDates.push(new Date().toISOString());
+
     // Update UI
     updateUI(currentAccount);
   }
@@ -211,6 +241,9 @@ btnLoan.addEventListener('click', function (e) {
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     // Add movement
     currentAccount.movements.push(amount);
+
+    // Add Loan date
+    currentAccount.movementsDates.push(new Date().toISOString());
 
     // Update UI
     updateUI(currentAccount);
@@ -244,7 +277,7 @@ btnClose.addEventListener('click', function (e) {
 let sorted = false;
 btnSort.addEventListener('click', function (e) {
   e.preventDefault();
-  displayMovements(currentAccount.movements, !sorted);
+  displayMovements(currentAccount, !sorted);
   sorted = !sorted;
 });
 
@@ -296,6 +329,7 @@ console.log(typeof +'20');
 
 */
 
+/*
 // Math and Rounding
 
 console.log(Math.sqrt(25));
@@ -346,3 +380,129 @@ console.log(+(2.345).toFixed(2)); // 2.35 --> returns a number this time because
 // to round decimal numbers
 // 1) it gets another '()' to put the numbers in
 // 2) .toFixed()  -> always returns 'string' not a number
+
+*/
+
+/*
+// Remainder Operator
+
+console.log(5 % 2); // 1
+console.log(5 / 2); // 2.5  ---> 5 = 2 * 2 + 1
+
+console.log(8 % 3); //2
+console.log(8 / 3); //2.66666666  ----> 8 = 2 * 3 + 2
+
+console.log(6 % 2); // 0
+console.log(6 / 2);
+
+console.log(7 % 2);
+console.log(7 / 2);
+
+const isEven = n => n % 2 === 0;
+console.log(isEven(8)); // true
+console.log(isEven(23)); // false
+console.log(isEven(514)); // true
+
+labelBalance.addEventListener('click', function () {
+  [...document.querySelectorAll('.movements__row')].forEach(function (row, i) {
+    // 0, 2, 4, 6
+    if (i % 2 === 0) row.style.backgroundColor = 'orangered';
+    // 0, 3, 6, 9
+    if (i % 3 === 0) row.style.backgroundColor = 'blue';
+  });
+});
+
+*/
+
+/*
+// BigInt
+
+console.log(2 ** 53 - 1);
+console.log(Number.MAX_SAFE_INTEGER);
+console.log(2 ** 53 + 1); // not correct
+console.log(2 ** 53 + 2);
+console.log(2 ** 53 + 3);
+console.log(2 ** 53 + 4);
+
+console.log(6546464654621654654987646546546987684654654); // 6.546464654621655e+42
+console.log(6546464654621654654987646546546987684654654n); // 6546464654621654654987646546546987684654654n
+console.log(BigInt(6546464654621654654987646546546987684654654)); // 6546464654621655123399732820031286217277440n
+//'BigInt' should be only used in smallar numbers
+
+// Operations
+console.log(10000n + 10000n);
+console.log(654694968798795465465467987984654n * 654641654654654654654n);
+//console.log(Math.sqrt(16n)); // Uncaught TypeError: Cannot convert a BigInt value to a number at Math.sqrt
+// Math operators does not work with BigInt
+
+const huge = 20435874239579287592875918734987n;
+const num = 23;
+//console.log(huge * num); //Uncaught TypeError: Cannot mix BigInt and other types, use explicit conversions
+// it can be only used in between bigint numbers
+console.log(huge * BigInt(num)); // it works then
+
+// Exceptions
+console.log(20n > 15); // true
+console.log(20n === 20); // false  -> because 20n is BigInt number and 20 is regular number
+console.log(typeof 20n); // bigint
+console.log(20n == 20); // true --> because JS does type coercion if I use '=='
+
+console.log(huge + 'is REALLY BIG!!'); // 20435874239579287592875918734987is REALLY BIG!! ---> numbers will be converted to string
+
+// Divisions
+console.log(10n / 3n); // 3n   ---> cuts off the decimal part
+console.log(10 / 3); // 3.3333333333333335
+console.log(11n / 3n); // 3n    ---> cuts off the decimal part
+
+*/
+
+// Creating Dates
+
+/*
+const now = new Date();
+console.log(now);
+
+console.log(new Date('Jun 11 2021 19:13:22 '));
+console.log(new Date('Decenber 24, 2015'));
+
+console.log(new Date(account1.movementsDates[0]));
+console.log(new Date(2037, 10, 19, 15, 23, 5)); // Thu Nov 19 2037 15:23:05
+// 10 -> Nov because the months in JS is 0 based.
+console.log(new Date(2037, 10, 31)); // Tue Dec 01 2037
+// Nov does not have 31st however, JS auto corrects itself to DEC 01
+console.log(new Date(2037, 10, 33)); // Thu Dec 03 2037
+
+console.log(new Date(0)); // Wed Dec 31 1969 (initial Unix Time)
+console.log(new Date(3 * 24 * 60 * 60 * 1000)); // Sat Jan 03 1970
+// how to create 3 days after Unix Time? 3days*24hours*60mins*60sec*1000milliseconds
+
+*/
+
+/*
+// Working with dates
+const future = new Date(2037, 10, 19, 15, 23);
+console.log(future);
+console.log(future.getFullYear()); //2037
+console.log(future.getMonth()); // 10 (Nov)
+console.log(future.getDate()); //19
+console.log(future.getDay()); // 4 (Thursday)
+// 0(Sunday) 1(Mon) 2(Tue)...
+console.log(future.getHours()); // 15
+console.log(future.getMinutes()); // 23
+console.log(future.getSeconds()); // 0
+
+console.log(future.toISOString()); // 2037-11-19T20:23:00.000Z
+console.log(future.getTime()); // 2142274980000  (getting time stamp)
+// 2142274980000  <--- this amount of milliseconds has passed since initial Unix Time
+
+console.log(new Date(2142274980000)); // Thu Nov 19 2037 15:23:00
+// it gives the same result as 'future'
+
+// Getting the time stamp of as now
+console.log(Date.now()); // 1623454710715
+
+future.setFullYear(2040);
+console.log(future); // Mon Nov 19 2040 15:23:00
+// there are setmonth, setdate, setday.....
+
+*/
